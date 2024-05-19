@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Pedido } from '@prisma/client';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
@@ -9,12 +9,22 @@ export class PedidoService {
 
   async create(createPedidoDto: CreatePedidoDto): Promise<Pedido> {
     let valorTotal = 0;
+
     for (const item of createPedidoDto.produtos) {
       const produto = await this.prisma.produto.findUnique({ where: { id: item.produtoId } });
       if (!produto) {
         throw new NotFoundException(`Produto com ID ${item.produtoId} não encontrado`);
       }
+      if (produto.estoque < item.quantidade) {
+        throw new BadRequestException(`Estoque insuficiente para o produto com ID ${item.produtoId}`);
+      }
+
       valorTotal += produto.valor * item.quantidade;
+
+      await this.prisma.produto.update({
+        where: { id: item.produtoId },
+        data: { estoque: produto.estoque - item.quantidade },
+      });
     }
 
     const novoPedido = await this.prisma.pedido.create({
