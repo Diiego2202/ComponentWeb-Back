@@ -7,6 +7,18 @@ import { CreatePedidoDto } from './dto/create-pedido.dto';
 export class PedidoService {
   constructor(private prisma: PrismaService) {}
 
+  async findOne(id: number): Promise<Pedido> {
+    const pedido = await this.prisma.pedido.findUnique({ where: { id } });
+    if (!pedido) {
+      throw new NotFoundException(`Pedido com ID ${id} não encontrado`);
+    }
+    return pedido;
+  }
+
+  async findAll(): Promise<Pedido[]> {
+    return this.prisma.pedido.findMany();
+  }
+
   async create(createPedidoDto: CreatePedidoDto): Promise<Pedido> {
     let valorTotal = 0;
 

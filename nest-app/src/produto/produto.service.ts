@@ -8,6 +8,18 @@ import { UpdateProdutoDto } from './dto/update-produto.dto';
 export class ProdutoService {
   constructor(private prisma: PrismaService) {}
 
+  async findOne(id: number): Promise<Produto> {
+    const produto = await this.prisma.produto.findUnique({ where: { id } });
+    if (!produto) {
+      throw new NotFoundException(`Produto com ID ${id} não encontrado`);
+    }
+    return produto;
+  }
+
+  async findAll(): Promise<Produto[]> {
+    return this.prisma.produto.findMany();
+  }
+
   async create(data: CreateProdutoDto): Promise<Produto> {
     return this.prisma.produto.create({ data });
   }

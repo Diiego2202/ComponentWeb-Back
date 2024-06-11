@@ -1,4 +1,4 @@
-import { Controller, Post, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
 import { PedidoService } from './pedido.service';
 import { Pedido } from '@prisma/client';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
@@ -6,6 +6,16 @@ import { CreatePedidoDto } from './dto/create-pedido.dto';
 @Controller('pedido')
 export class PedidoController {
   constructor(private readonly pedidoService: PedidoService) {}
+
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Pedido> {
+    return this.pedidoService.findOne(id);
+  }
+
+  @Get()
+  async findAll(): Promise<Pedido[]> {
+    return this.pedidoService.findAll();
+  }
 
   @Post()
   async create(@Body() createPedidoDto: CreatePedidoDto): Promise<Pedido> {
